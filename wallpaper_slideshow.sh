@@ -11,8 +11,25 @@
 #This script is best used when invoked from an autostart folder.
 
 
-IS_NUM='^[0-9]+$'
-BOOTFLAG="bootonly"
+IS_NUM='^[0-9]+$'  
+
+
+if [[  $@ == **makecmd** ]]; then  
+	CMD="Copy and paste this command: 
+$(readlink -f $0) $1"
+	if [[  $2 != **makecmd** ]]; then
+	CMD+=" $2 "
+	fi
+	if [[  $3 != **makecmd** ]]; then
+	CMD+=" $3 "
+	fi 
+	echo -e "\n"
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+	echo $CMD
+ 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+	echo -e "\n"
+	exit;
+fi
 
 if [ -z "$1" ];
     then echo 'You must enter a directory'
