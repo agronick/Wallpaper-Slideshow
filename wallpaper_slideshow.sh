@@ -7,8 +7,9 @@
 #display a new one every [MINUTES] minutes. 
 #
 # --bootonly	Load an random image and exit.
+# --makecmd	Generate a command you can paste into Elementary OS's startup entries
 # 
-#This script is best used when invoked from an autostart folder.
+#This script is best used when invoked from an autostart folder. 
 
 
 IS_NUM='^[0-9]+$'  
