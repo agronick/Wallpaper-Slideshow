@@ -2,14 +2,12 @@
 #Author: Kyle Agronick
 #Email: agronick@gmail.com
  
-#Usage: wallpaper_slideshow.sh [FOLDER] [MINUTES] --bootonly
-#Randomly load pictures in FOLDER and display them and 
-#display a new one every [MINUTES] minutes. 
-#
-# --bootonly	Load an random image and exit.
-# --makecmd	Generate a command you can paste into Elementary OS's startup entries
-# 
-#This script is best used when invoked from an autostart folder. 
+#Usage: wallpaper_slideshow.sh [FOLDER] [MINUTES]...
+#display a new one every [MINUTES] minutes. This script is 
+#best used when invoked from an autostart folder. Run with
+# --help to display help information.
+
+
 
 if [[  $@ == **help** ]] || [[  $@ == **-h** ]]; then  
 cat << EOF
