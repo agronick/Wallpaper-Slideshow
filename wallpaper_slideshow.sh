@@ -25,8 +25,8 @@ images.
 OPTIONS:
    --bootonly      To load one image and exit
    --makecmd       Make the command to paste into 
-   --help	   Show this help and exit
    --log	   Write information to the terminal as well as syslog
+   --help	   Show this help and exit
 EOF
 line
 exit
@@ -37,8 +37,15 @@ FOLDER=$1
 MINS=2
 
 if [[  $@ == **makecmd** ]]; then  
-	CMD="Copy and paste this command: 
-$(readlink -f $0) " 
+        echo "How many seconds would you like to wait before starting? Press enter to skip."
+	read SECONDS
+
+	CMD="Copy and paste this command: "
+	if [[ $SECONDS =~ $IS_NUM ]];
+	    then CMD+="sleep $SECONDS;"
+	fi
+
+	CMD+="$(readlink -f $0) " 
 	if [[  $1 != **makecmd** ]]; then
 	CMD+=" $1 "
 	fi
@@ -47,7 +54,7 @@ $(readlink -f $0) "
 	fi
 	if [[  $3 != **makecmd** ]]; then
 	CMD+=" $3 "
-	fi 
+	fi  
 	echo -e "\n"
 	line
 	echo $CMD
