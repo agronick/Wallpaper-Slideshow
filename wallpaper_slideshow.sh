@@ -66,7 +66,7 @@ while true; do
 	str=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
 	for item in $str
 	do  
-	   item=$(realpath $item)   
+	   item=$(readlink -f $item)   
 	   gsettings set org.gnome.desktop.background picture-uri "$item" 
 	   if [[  $@ == **bootonly** ]]; then  
 		exit;
