@@ -47,12 +47,14 @@ $(readlink -f $0) $1"
 	exit;
 fi
 
-if [ -z "$1" ];
-    then FOLDER='/usr/share/backgrounds' 
+FOLDER='/usr/share/backgrounds';
+if [[ -d $1 ]];
+    then FOLDER=$1
 fi
 
-
-if [[ $2 =~ $IS_NUM ]];
+if [[ $1 =~ $IS_NUM ]];
+    then MINS=$1 
+elif [[ $2 =~ $IS_NUM ]];
     then MINS=$2 
 fi
  
@@ -63,8 +65,7 @@ cd "$FOLDER"
 while true; do
 	str=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
 	for item in $str
-	do 
-	   echo $item
+	do  
 	   item=$(realpath $item)   
 	   gsettings set org.gnome.desktop.background picture-uri "$item" 
 	   if [[  $@ == **bootonly** ]]; then  
