@@ -7,9 +7,13 @@
 #best used when invoked from an autostart folder. Run with
 # --help to display help information.
 
-
+line()
+{
+	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+}
 
 if [[  $@ == **help** ]] || [[  $@ == **-h** ]]; then  
+line
 cat << EOF
 Usage: $0  [FOLDER] [MINUTES]
 
@@ -20,9 +24,11 @@ images.
  
 OPTIONS:
    --bootonly      To load one image and exit
-   --makecmd      Make the command to paste into 
-   --help	  Show this help and exit
+   --makecmd       Make the command to paste into 
+   --help	   Show this help and exit
+   --log	   Write information to the terminal as well as syslog
 EOF
+line
 exit
 fi
  
@@ -32,7 +38,10 @@ MINS=2
 
 if [[  $@ == **makecmd** ]]; then  
 	CMD="Copy and paste this command: 
-$(readlink -f $0) $1"
+$(readlink -f $0) " 
+	if [[  $1 != **makecmd** ]]; then
+	CMD+=" $1 "
+	fi
 	if [[  $2 != **makecmd** ]]; then
 	CMD+=" $2 "
 	fi
@@ -40,9 +49,9 @@ $(readlink -f $0) $1"
 	CMD+=" $3 "
 	fi 
 	echo -e "\n"
-	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+	line
 	echo $CMD
- 	printf '%*s\n' "${COLUMNS:-$(tput cols)}" '' | tr ' ' =
+	line
 	echo -e "\n"
 	exit;
 fi
@@ -58,6 +67,10 @@ elif [[ $2 =~ $IS_NUM ]];
     then MINS=$2 
 fi
 
+if [[  $@ == **log** ]]; then  
+	exec 1> >(logger -s -t $(basename $0)) 2>&1
+	echo  “Starting slideshow at a $MINS minute\(s\) interval with images from $FOLDER”
+fi
  
 IFS=$'\n'
 MINS+="m" 
@@ -77,8 +90,10 @@ while true; do
 	   gsettings set org.gnome.desktop.background picture-uri "$item" 
 	   if [[  $@ == **bootonly** ]]; then  
 		exit;
+	   fi 
+	   if [[  $@ == **log** ]]; then  
+		echo “Setting background image to $item”
 	   fi
-
 	   sleep $MINS
 
 	done
