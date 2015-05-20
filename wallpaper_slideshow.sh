@@ -57,20 +57,29 @@ if [[ $1 =~ $IS_NUM ]];
 elif [[ $2 =~ $IS_NUM ]];
     then MINS=$2 
 fi
- 
+
  
 IFS=$'\n'
 MINS+="m" 
 cd "$FOLDER"
 while true; do
-	str=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
-	for item in $str
+	FILES=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
+	 
+	if [ -z "$FILES" ]; then
+	    echo "There does not appear to be any image files in $FOLDER"
+	    exit
+	fi
+
+	for item in $FILES
 	do  
+
 	   item=$(readlink -f $item)   
 	   gsettings set org.gnome.desktop.background picture-uri "$item" 
 	   if [[  $@ == **bootonly** ]]; then  
 		exit;
 	   fi
+
 	   sleep $MINS
+
 	done
 done
