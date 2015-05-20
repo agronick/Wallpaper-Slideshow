@@ -41,7 +41,7 @@ if [[  $@ == **makecmd** ]]; then
 	read SECONDS
 
 	CMD="Copy and paste this command: "
-	if [[ $SECONDS =~ $IS_NUM ]];
+	if [[ $SECONDS =~ $IS_NUM &&  $SECONDS -gt "0" ]] ;
 	    then CMD+="sleep $SECONDS;"
 	fi
 
