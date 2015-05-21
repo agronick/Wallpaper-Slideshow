@@ -37,13 +37,8 @@ FOLDER=$1
 MINS=2
 
 if [[  $@ == **makecmd** ]]; then  
-        echo "How many seconds would you like to wait before starting? Press enter to skip."
-	read SECONDS
-
+        
 	CMD="Copy and paste this command: "
-	if [[ $SECONDS =~ $IS_NUM &&  $SECONDS -gt "0" ]] ;
-	    then CMD+="sleep $SECONDS;"
-	fi
 
 	CMD+="$(readlink -f $0) " 
 	if [[  $1 != **makecmd** ]]; then
