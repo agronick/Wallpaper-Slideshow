@@ -25,6 +25,7 @@ images.
 OPTIONS:
    --bootonly      To load one image and exit
    --makecmd       Make the command to paste into 
+   --wait	   Sleep [MINUTES] minutes before changing to the first image
    --log	   Write information to the terminal as well as syslog
    --help	   Show this help and exit
 EOF
@@ -36,20 +37,17 @@ IS_NUM='^[0-9]+$'
 FOLDER=$1
 MINS=2
 
-if [[  $@ == **makecmd** ]]; then  
-        
-	CMD="Copy and paste this command: "
-
+if [[  $@ == **makecmd** ]]; then   
+	CMD="Copy and paste this command: " 
 	CMD+="$(readlink -f $0) " 
-	if [[  $1 != **makecmd** ]]; then
-	CMD+=" $1 "
-	fi
-	if [[  $2 != **makecmd** ]]; then
-	CMD+=" $2 "
-	fi
-	if [[  $3 != **makecmd** ]]; then
-	CMD+=" $3 "
-	fi  
+
+	cmds=($1 $2 $3 $4 $5) 
+	for i in ${cmds[@]}; do
+		if [[  $i != **makecmd** ]]; then
+		CMD+=" $i "
+		fi 
+	done
+
 	echo -e "\n"
 	line
 	echo $CMD
@@ -75,8 +73,24 @@ if [[  $@ == **log** ]]; then
 fi
  
 IFS=$'\n'
-MINS+="m" 
+
 cd "$FOLDER"
+
+if [[  $@ == **wait** ]]; then  
+	sleep "$MINS""m"
+fi
+
+function do_exit()
+{ 
+    if [[  $@ == **log** ]]; then  
+		echo "Exiting..."
+		pkill "logger -s -t $(basename $0)"
+	fi 
+	exit;
+}
+trap do_exit EXIT TERM
+
+ERRORCOUNT=0
 while true; do
 	FILES=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
 	 
@@ -89,14 +103,23 @@ while true; do
 	do  
 
 	   item=$(readlink -f $item)   
-	   gsettings set org.gnome.desktop.background picture-uri "$item" 
-	   if [[  $@ == **bootonly** ]]; then  
-		exit;
+	   OUTPUT=$(gsettings set org.gnome.desktop.background picture-uri "$item" 2>&1) 
+       if [ ${#OUTPUT} -gt 3 ]; then
+            ((ERRORCOUNT++)) 
+            
+            if [  $(($ERRORCOUNT * $MINS))  -gt 10 ]; then
+                do_exit
+            fi 
+       else 
+	       if [[  $@ == **log** ]]; then  
+		    echo “Set background image to $item”
+	       fi
+            ERRORCOUNT=0
+       fi 
+	   if [[  $@ == **bootonly** ]]; then 
+		do_exit
 	   fi 
-	   if [[  $@ == **log** ]]; then  
-		echo “Setting background image to $item”
-	   fi
-	   sleep $MINS
+	   sleep "$MINS""m"
 
 	done
-done
+done  
