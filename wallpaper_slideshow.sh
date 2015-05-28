@@ -23,11 +23,12 @@ images are the Elementary OS stock background
 images.
  
 OPTIONS:
-   --bootonly      To load one image and exit
-   --makecmd       Make the command to paste into 
-   --wait	   Sleep [MINUTES] minutes before changing to the first image
-   --log	   Write information to the terminal as well as syslog
-   --help	   Show this help and exit
+   --bootonly   To load one image and exit
+   --makecmd    Make the command to paste into 
+   --wait       Sleep [MINUTES] minutes before changing to the first image
+   --nologin    Do not changed the picture on the login screen 
+   --log	    Write information to the terminal as well as syslog
+   --help	    Show this help and exit
 EOF
 line
 exit
@@ -35,7 +36,13 @@ fi
  
 IS_NUM='^[0-9]+$'  
 FOLDER=$1
-MINS=2
+MINS=2 
+DO_LOG=false;
+if [[  $@ == **log** ]]; then 
+    DO_LOG=true; 
+fi
+     
+ 
 
 if [[  $@ == **makecmd** ]]; then   
 	CMD="Copy and paste this command: " 
@@ -67,9 +74,9 @@ elif [[ $2 =~ $IS_NUM ]];
     then MINS=$2 
 fi
 
-if [[  $@ == **log** ]]; then  
-	exec 1> >(logger -s -t $(basename $0)) 2>&1
-	echo  “Starting slideshow at a $MINS minute\(s\) interval with images from $FOLDER”
+if [ $DO_LOG ]; then  
+	exec 1> >(logger -s -t $(basename $0)) 2>&1 
+	echo “Starting slideshow at a $MINS minute\(s\) interval with images from $FOLDER”
 fi
  
 IFS=$'\n'
@@ -82,7 +89,7 @@ fi
 
 function do_exit()
 { 
-    if [[  $@ == **log** ]]; then  
+    if [[  $DO_LOG ]]; then  
 		echo "Exiting..."
 		pkill "logger -s -t $(basename $0)"
 	fi 
@@ -90,6 +97,13 @@ function do_exit()
 }
 trap do_exit EXIT TERM
 
+HAS_DBUS=`command -v qdbus ` 
+if [[  $@ == **nologin** ]]; then 
+    if [ $DO_LOG ]; then
+        echo "Disabling login screen change."
+    fi 
+    HAS_DBUS=""
+fi
 ERRORCOUNT=0
 while true; do
 	FILES=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
@@ -102,20 +116,24 @@ while true; do
 	for item in $FILES
 	do  
 
-	   item=$(readlink -f $item)   
+	   item=$(readlink -f $item)  
 	   OUTPUT=$(gsettings set org.gnome.desktop.background picture-uri "$item" 2>&1) 
+     
        if [ ${#OUTPUT} -gt 3 ]; then
-            ((ERRORCOUNT++)) 
-            
+            ((ERRORCOUNT++))  
             if [  $(($ERRORCOUNT * $MINS))  -gt 10 ]; then
                 do_exit
             fi 
-       else 
-	       if [[  $@ == **log** ]]; then  
-		    echo “Set background image to $item”
-	       fi
+       else     
             ERRORCOUNT=0
+            if [ $DO_LOG ]; then
+		        echo “Set background image to $item” 
+            fi
        fi 
+        
+       if [ ${#HAS_DBUS} -gt 5 ]; then  
+         `qdbus --system org.freedesktop.Accounts /org/freedesktop/Accounts/User$UID org.freedesktop.Accounts.User.SetBackgroundFile "$item"`  
+       fi
 	   if [[  $@ == **bootonly** ]]; then 
 		do_exit
 	   fi 
