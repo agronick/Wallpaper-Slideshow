@@ -38,7 +38,7 @@ IS_NUM='^[0-9]+$'
 FOLDER=$1
 MINS=2 
 DO_LOG=false;
-if [[  $@ == **log** ]]; then 
+if [[  $@ == **log** ]]; then  
     DO_LOG=true; 
 fi
      
@@ -74,7 +74,7 @@ elif [[ $2 =~ $IS_NUM ]];
     then MINS=$2 
 fi
 
-if [ $DO_LOG ]; then  
+if  $DO_LOG ; then  
 	exec 1> >(logger -s -t $(basename $0)) 2>&1 
 	echo “Starting slideshow at a $MINS minute\(s\) interval with images from $FOLDER”
 fi
@@ -89,7 +89,7 @@ fi
 
 function do_exit()
 { 
-    if [[  $DO_LOG ]]; then  
+    if   $DO_LOG ; then  
 		echo "Exiting..."
 		pkill "logger -s -t $(basename $0)"
 	fi 
@@ -99,7 +99,7 @@ trap do_exit EXIT TERM
 
 HAS_DBUS=`command -v qdbus ` 
 if [[  $@ == **nologin** ]]; then 
-    if [ $DO_LOG ]; then
+    if  $DO_LOG ; then
         echo "Disabling login screen change."
     fi 
     HAS_DBUS=""
@@ -126,7 +126,7 @@ while true; do
             fi 
        else     
             ERRORCOUNT=0
-            if [ $DO_LOG ]; then
+            if $DO_LOG ; then
 		        echo “Set background image to $item” 
             fi
        fi 
