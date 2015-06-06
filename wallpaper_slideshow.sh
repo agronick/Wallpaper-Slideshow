@@ -105,6 +105,8 @@ if [[  $@ == **nologin** ]]; then
     HAS_DBUS=""
 fi
 ERRORCOUNT=0
+
+sleep 3
 while true; do
 	FILES=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
 	 
@@ -125,15 +127,15 @@ while true; do
                 do_exit
             fi 
        else     
-            ERRORCOUNT=0
-            if $DO_LOG ; then
-		        echo “Set background image to $item” 
-            fi
+           ERRORCOUNT=0
+           if $DO_LOG ; then
+		   		echo “Set background image to $item” 
+           fi
+	       if [ ${#HAS_DBUS} -gt 5 ]; then  
+	         `qdbus --system org.freedesktop.Accounts /org/freedesktop/Accounts/User$UID org.freedesktop.Accounts.User.SetBackgroundFile "$item"`  
+	       fi
        fi 
         
-       if [ ${#HAS_DBUS} -gt 5 ]; then  
-         `qdbus --system org.freedesktop.Accounts /org/freedesktop/Accounts/User$UID org.freedesktop.Accounts.User.SetBackgroundFile "$item"`  
-       fi
 	   if [[  $@ == **bootonly** ]]; then 
 		do_exit
 	   fi 
