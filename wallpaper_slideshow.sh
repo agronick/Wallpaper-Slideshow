@@ -46,10 +46,10 @@ fi
 
 if [[  $@ == **makecmd** ]]; then   
 	CMD="Copy and paste this command: " 
-	CMD+="$(readlink -f $0) " 
+	CMD+="$(readlink -f "$0")"
 
 	cmds=($1 $2 $3 $4 $5) 
-	for i in ${cmds[@]}; do
+	for i in "${cmds[@]}"; do
 		if [[  $i != **makecmd** ]]; then
 		CMD+=" $i "
 		fi 
@@ -57,7 +57,7 @@ if [[  $@ == **makecmd** ]]; then
 
 	echo -e "\n"
 	line
-	echo $CMD
+	echo "$CMD"
 	line
 	echo -e "\n"
 	exit;
@@ -75,8 +75,8 @@ elif [[ $2 =~ $IS_NUM ]];
 fi
 
 if  $DO_LOG ; then  
-	exec 1> >(logger -s -t $(basename $0)) 2>&1 
-	echo “Starting slideshow at a $MINS minute\(s\) interval with images from $FOLDER”
+	exec 1> >(logger -s -t "$(basename "$0")") 2>&1 
+	echo "Starting slideshow at a $MINS minute(s) interval with images from $FOLDER"
 fi
  
 IFS=$'\n'
@@ -91,13 +91,13 @@ function do_exit()
 { 
     if   $DO_LOG ; then  
 		echo "Exiting..."
-		pkill "logger -s -t $(basename $0)"
+		pkill logger -s -t "$(basename "$0")"
 	fi 
 	exit;
 }
 trap do_exit EXIT TERM
 
-HAS_DBUS=`command -v qdbus ` 
+HAS_DBUS=$(command -v qdbus)
 if [[  $@ == **nologin** ]]; then 
     if  $DO_LOG ; then
         echo "Disabling login screen change."
@@ -108,7 +108,7 @@ ERRORCOUNT=0
 
 sleep 3
 while true; do
-	FILES=`find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf` 
+	FILES=$(find ./ -iregex '.*\.\(tga\|jpg\|gif\|png\|jpeg\)$' | shuf)
 	 
 	if [ -z "$FILES" ]; then
 	    echo "There does not appear to be any image files in $FOLDER"
@@ -118,21 +118,21 @@ while true; do
 	for item in $FILES
 	do  
 
-	   item=$(readlink -f $item)  
+	   item=$(readlink -f "$item")  
 	   OUTPUT=$(gsettings set org.gnome.desktop.background picture-uri "$item" 2>&1) 
      
        if [ ${#OUTPUT} -gt 3 ]; then
             ((ERRORCOUNT++))  
-            if [  $(($ERRORCOUNT * $MINS))  -gt 10 ]; then
+            if [  $((ERRORCOUNT * MINS))  -gt 10 ]; then
                 do_exit
             fi 
        else     
            ERRORCOUNT=0
            if $DO_LOG ; then
-		   		echo “Set background image to $item” 
+		   		echo "Set background image to $item"
            fi
 	       if [ ${#HAS_DBUS} -gt 5 ]; then  
-	         `qdbus --system org.freedesktop.Accounts /org/freedesktop/Accounts/User$UID org.freedesktop.Accounts.User.SetBackgroundFile "$item"`  
+	         $(qdbus --system org.freedesktop.Accounts /org/freedesktop/Accounts/User$UID org.freedesktop.Accounts.User.SetBackgroundFile "$item")
 	       fi
        fi 
         
