@@ -34,7 +34,7 @@ line
 exit
 fi
  
-IS_NUM='^[0-9]+$'  
+IS_NUM='^[0-9]+\.?[0-9]*$'  
 FOLDER=$1
 MINS=2 
 DO_LOG=false;
